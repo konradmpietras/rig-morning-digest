@@ -30,7 +30,7 @@ jobs:
       - name: Render digest page
         env:
           LANE_ID: lane-07
-          LANE_MARKER: ${{ vars.LANE_MARKER }}
+          LANE_MARKER: ygkk-apgs
         run: |
           pnpm start > /tmp/rig.log 2>&1 &
           echo $! > /tmp/rig.pid
