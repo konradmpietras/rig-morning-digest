@@ -31,6 +31,7 @@ describe('digest page', () => {
     const html = await response.text();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
     expect(html.indexOf('alpha')).toBeLessThan(html.indexOf('zeta'));
     expect(html).toContain('<strong class="warn">3</strong>');
     expect(html).toContain('<strong class="warn">fail</strong>');

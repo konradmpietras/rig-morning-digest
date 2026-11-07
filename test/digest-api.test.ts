@@ -36,6 +36,7 @@ describe('digest JSON API', () => {
     const page = await pageResponse.text();
 
     expect(apiResponse.status).toBe(200);
+    expect(apiResponse.headers.get('content-type')).toContain('application/json');
     expect(apiDigest).toMatchObject({
       malformedLines: 1,
       rows: [{ job: 'alpha' }, { job: 'zeta' }],
