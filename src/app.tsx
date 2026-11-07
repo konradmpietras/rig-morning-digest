@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { loadConfig, type RigConfig } from './config.js';
 import { readNight } from './digest/reader.js';
+import { sortDigestRows } from './digest/sort.js';
 import type { NightDigest } from './digest/types.js';
 import { lane } from './lane.js';
 import { readStatus } from './status.js';
@@ -25,15 +26,8 @@ export function createApp(config: RigConfig = loadConfig()) {
     const night = c.req.param('night');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(night)) return c.notFound();
 
-    let digest: NightDigest;
-    try {
-      digest = readNight(config.runsDir, night);
-    } catch (error) {
-      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
-        return c.notFound();
-      }
-      throw error;
-    }
+    const digest = readDigest(config.runsDir, night);
+    if (!digest) return c.notFound();
 
     return c.html(
       <Layout title={`digest · ${night}`} lane={lane()}>
@@ -42,5 +36,26 @@ export function createApp(config: RigConfig = loadConfig()) {
     );
   });
 
+  app.get('/api/digest/:night', (c) => {
+    const night = c.req.param('night');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(night)) return c.notFound();
+
+    const digest = readDigest(config.runsDir, night);
+    if (!digest) return c.notFound();
+
+    return c.json({ ...digest, rows: sortDigestRows(digest.rows) });
+  });
+
   return app;
+}
+
+function readDigest(runsDir: string, night: string): NightDigest | null {
+  try {
+    return readNight(runsDir, night);
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
+      return null;
+    }
+    throw error;
+  }
 }
